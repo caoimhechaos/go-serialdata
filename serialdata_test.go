@@ -170,3 +170,47 @@ func TestSerializeAndReadRecord(t *testing.T) {
 			"), expected World")
 	}
 }
+
+// Write a bunch of records to a memory buffer and read them back.
+// Essentially, desperately shouting "Hello" into the void 10'000 times.
+func BenchmarkRecordWriterAndReader(b *testing.B) {
+	var buf *bytes.Buffer = new(bytes.Buffer)
+	var writer *SerialDataWriter = NewSerialDataWriter(buf)
+	var reader *SerialDataReader
+	var rbuf []byte
+	var err error
+	var i, l int
+
+	b.StartTimer()
+
+	for i = 0; i < b.N; i++ {
+		l, err = writer.Write([]byte("Hello"))
+		if err != nil {
+			b.Error("Error writing record: ", err)
+		}
+
+		if l != 9 {
+			b.Error("Write length mismatched (expected 9, got ", l, ")")
+		}
+	}
+
+	reader = NewSerialDataReader(bytes.NewReader(buf.Bytes()))
+	for i = 0; i < b.N; i++ {
+		rbuf, err = reader.ReadRecord()
+		if err != nil {
+			b.Error("Error reading record: ", err)
+		}
+
+		if len(rbuf) != 5 {
+			b.Error("Read length mismatched (expected 5, got ", len(rbuf), ")")
+		}
+
+		if string(rbuf) != "Hello" {
+			b.Error("Unexpected data: got ", string(rbuf), " (", rbuf,
+				"), expected Hello")
+		}
+	}
+
+	b.StopTimer()
+	b.ReportAllocs()
+}
