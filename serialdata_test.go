@@ -33,6 +33,7 @@ package serialdata
 
 import (
 	"bytes"
+	"code.google.com/p/goprotobuf/proto"
 	"testing"
 )
 
@@ -168,6 +169,50 @@ func TestSerializeAndReadRecord(t *testing.T) {
 	if string(rbuf) != "World" {
 		t.Error("Unexpected data: got ", string(rbuf), " (", rbuf,
 			"), expected World")
+	}
+}
+
+// Serialize a protobuf message and try to read it again.
+func TestSerializeAndReadMessage(t *testing.T) {
+	var buf *bytes.Buffer = new(bytes.Buffer)
+	var writer *SerialDataWriter = NewSerialDataWriter(buf)
+	var reader *SerialDataReader
+	var err error
+
+	var data MessageForTest
+
+	data.TestMessage = proto.String("Test data")
+	err = writer.WriteMessage(&data)
+	if err != nil {
+		t.Error("Cannot serialize message: ", err)
+	}
+
+	data.TestMessage = proto.String("Toast Data")
+	err = writer.WriteMessage(&data)
+	if err != nil {
+		t.Error("Cannot serialize message: ", err)
+	}
+
+	reader = NewSerialDataReader(bytes.NewReader(buf.Bytes()))
+	data.Reset()
+
+	err = reader.ReadMessage(&data)
+	if err != nil {
+		t.Error("Unable to re-read the message: ", err)
+	}
+
+	if data.GetTestMessage() != "Test data" {
+		t.Errorf("Expected: Test data, got: %s", data.GetTestMessage())
+	}
+	data.Reset()
+
+	err = reader.ReadMessage(&data)
+	if err != nil {
+		t.Error("Unable to re-read the message: ", err)
+	}
+
+	if data.GetTestMessage() != "Toast Data" {
+		t.Errorf("Expected: Toast Data, got: %s", data.GetTestMessage())
 	}
 }
 

@@ -32,6 +32,7 @@
 package serialdata
 
 import (
+	"code.google.com/p/goprotobuf/proto"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -124,4 +125,17 @@ func (s *SerialDataReader) Read(data []byte) (int, error) {
 	copy(data, buf)
 
 	return len(buf), nil
+}
+
+// Read the next record and interpret it as a protocol buffer message.
+func (s *SerialDataReader) ReadMessage(pb proto.Message) error {
+	var buf []byte
+	var err error
+
+	buf, err = s.ReadRecord()
+	if err != nil {
+		return err
+	}
+
+	return proto.Unmarshal(buf, pb)
 }

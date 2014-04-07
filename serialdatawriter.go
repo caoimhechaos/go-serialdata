@@ -32,6 +32,7 @@
 package serialdata
 
 import (
+	"code.google.com/p/goprotobuf/proto"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -75,4 +76,18 @@ func (s *SerialDataWriter) Write(data []byte) (int, error) {
 	}
 
 	return header_len + body_len, nil
+}
+
+// Write the designated protobuf record to the underlying writer.
+func (s *SerialDataWriter) WriteMessage(pb proto.Message) error {
+	var b []byte
+	var err error
+
+	b, err = proto.Marshal(pb)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.Write(b)
+	return err
 }
