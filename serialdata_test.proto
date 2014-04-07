@@ -1,0 +1,7 @@
+package serialdata;
+
+// A message for the protobuf test.
+message MessageForTest {
+	// Just a string for testing.
+	required string test_message = 1;
+}
