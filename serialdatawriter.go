@@ -41,7 +41,7 @@ import (
 
 // A writer for a serial structure of consecutive data.
 type SerialDataWriter struct {
-	io.Writer
+	io.WriteSeeker
 	w io.Writer
 }
 
@@ -91,4 +91,18 @@ func (s *SerialDataWriter) WriteMessage(pb proto.Message) error {
 
 	_, err = s.Write(b)
 	return err
+}
+
+// Support seeks if the underlying object has got seek support. This is mostly
+// used to report the current position rather than do actual seeks.
+func (s *SerialDataWriter) Seek(offset int64, whence int) (int64, error) {
+	var seeker io.Seeker
+	var ok bool
+
+	seeker, ok = s.w.(io.Seeker)
+	if ok {
+		return seeker.Seek(offset, whence)
+	}
+
+	return -1, errors.New("Underlying object does not support seeking")
 }

@@ -41,7 +41,7 @@ import (
 
 // A reader for a serial structure of consecutive data.
 type SerialDataReader struct {
-	io.Reader
+	io.ReadSeeker
 	r io.Reader
 }
 
@@ -139,4 +139,19 @@ func (s *SerialDataReader) ReadMessage(pb proto.Message) error {
 	}
 
 	return proto.Unmarshal(buf, pb)
+}
+
+// Support seeks if the underlying object has got seek support. Seeks must
+// always occur to the beginning of a record. This is mostly useful for
+// reading from indexes.
+func (s *SerialDataReader) Seek(offset int64, whence int) (int64, error) {
+	var seeker io.Seeker
+	var ok bool
+
+	seeker, ok = s.r.(io.Seeker)
+	if ok {
+		return seeker.Seek(offset, whence)
+	}
+
+	return -1, errors.New("Underlying object does not support seeking")
 }
