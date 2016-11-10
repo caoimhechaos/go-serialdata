@@ -35,7 +35,7 @@ import (
 	"bytes"
 	"testing"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 // Write a bit of test data and test the io.Reader interface.

@@ -36,7 +36,7 @@ import (
 	"errors"
 	"io"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 // A reader for a serial structure of consecutive data.
